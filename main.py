@@ -7,10 +7,14 @@ from PyPDF2 import PdfReader
 from openai import OpenAI
 
 # 百度云文本识别配置
+OCR_API_KEY = ""
+OCR_SECRET_KEY = ""
+# API URL
+API_URL = ""  # 'https://api.openai-proxy.org/v1'
+# API 密钥
 API_KEY = ""
-SECRET_KEY = ""
-# OpenAI 密钥
-OPENAI_KEY = ""
+# API 模型
+API_MODEL = ""  # "gpt-3.5-turbo"
 # 要处理的 PDF 路径和输出的 Markdown 路径
 PDF_PATH = r"E:\Test\a.pdf"
 OUTPUT_DIRECTORY = r"E:\Test\\"
@@ -77,7 +81,7 @@ def perform_ocr(pdf_file_base64, num_pages):
 def get_access_token():
     try:
         url = "https://aip.baidubce.com/oauth/2.0/token"
-        params = {"grant_type": "client_credentials", "client_id": API_KEY, "client_secret": SECRET_KEY}
+        params = {"grant_type": "client_credentials", "client_id": OCR_API_KEY, "client_secret": OCR_SECRET_KEY}
         response = requests.post(url, params=params)
         if response.status_code == 200:
             return str(response.json().get("access_token"))
@@ -90,8 +94,7 @@ def get_access_token():
 
 
 def process_and_answer_questions(ocr_results):
-    # 自行替换 API Base
-    client = OpenAI(base_url='https://api.openai-proxy.org/v1', api_key=OPENAI_KEY)
+    client = OpenAI(base_url=API_URL, api_key=API_KEY)
 
     questions_prompt = build_ocr_prompt(ocr_results)
     questions = generate_markdown_content(client, questions_prompt)
@@ -119,7 +122,7 @@ def build_answer_prompt(questions):
 def generate_markdown_content(client, prompt):
     chat_completion = client.chat.completions.create(
         messages=[{"role": "user", "content": prompt}],
-        model="gpt-3.5-turbo",
+        model=API_MODEL,
     )
     return chat_completion.choices[0].message.content
 
